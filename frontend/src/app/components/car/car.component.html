@@ -1,0 +1,21 @@
+<div class="car-container">
+    <h2>Cars</h2>
+    <table>
+        <tr *ngFor="let car of cars">
+            <td>{{ car.maker }} {{ car.model }} ({{ car.modelYear }}) - ${{ car.price }}</td>
+            <td><button (click)="deleteCar(car.id)">Delete</button></td>
+        </tr>
+    </table>
+
+    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)"></mat-paginator>
+
+    <h3>Add New Car</h3>
+    <form (ngSubmit)="addCar(newCar)">
+        <input [(ngModel)]="newCar.vin" name="vin" placeholder="VIN" required />
+        <input [(ngModel)]="newCar.maker" name="maker" placeholder="Maker" required />
+        <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required />
+        <input [(ngModel)]="newCar.modelYear" name="modelYear" placeholder="Model Year" required />
+        <input [(ngModel)]="newCar.price" name="price" placeholder="Price" required />
+        <button type="submit">Add Car</button>
+    </form>
+</div>

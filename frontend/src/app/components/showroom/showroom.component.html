@@ -1,0 +1,21 @@
+<div class="showroom-container">
+    <h2>Showrooms</h2>
+    <table>
+        <tr *ngFor="let showroom of showrooms">
+            <td>{{ showroom.name }} - {{ showroom.commercialRegistrationNumber }}</td>
+            <td><button (click)="deleteShowroom(showroom.id)">Delete</button></td>
+        </tr>
+    </table>
+
+    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)"></mat-paginator>
+
+    <h3>Add New Showroom</h3>
+    <form (ngSubmit)="addShowroom(newShowroom)">
+        <input [(ngModel)]="newShowroom.name" name="name" placeholder="Name" required />
+        <input [(ngModel)]="newShowroom.commercialRegistrationNumber" name="commercialRegistrationNumber" placeholder="Commercial Registration Number" required />
+        <input [(ngModel)]="newShowroom.managerName" name="managerName" placeholder="Manager Name" />
+        <input [(ngModel)]="newShowroom.contactNumber" name="contactNumber" placeholder="Contact Number" required />
+        <input [(ngModel)]="newShowroom.address" name="address" placeholder="Address" />
+        <button type="submit">Add Showroom</button>
+    </form>
+</div>

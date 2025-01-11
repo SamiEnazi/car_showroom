@@ -1,0 +1,5 @@
+ALTER TABLE showrooms
+ALTER COLUMN image_url TYPE TEXT;
+
+ALTER TABLE cars
+ALTER COLUMN image_url TYPE TEXT;
