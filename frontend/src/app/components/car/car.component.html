@@ -1,21 +1,56 @@
-<div class="car-container">
-    <h2>Cars</h2>
-    <table>
-        <tr *ngFor="let car of cars">
-            <td>{{ car.maker }} {{ car.model }} ({{ car.modelYear }}) - ${{ car.price }}</td>
-            <td><button (click)="deleteCar(car.id)">Delete</button></td>
-        </tr>
+<div class="car-container bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Cars</h2>
+
+    <!-- Cars Table -->
+    <table class="w-full text-left">
+        <thead>
+            <tr class="border-b border-gray-200 dark:border-gray-700">
+                <th class="py-2 text-gray-900 dark:text-white">Car Details</th>
+                <th class="py-2 text-gray-900 dark:text-white">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let car of cars" class="border-b border-gray-200 dark:border-gray-700">
+                <td class="py-2 text-gray-900 dark:text-white">
+                    {{ car.maker }} {{ car.model }} ({{ car.modelYear }}) - ${{ car.price }}
+                </td>
+                <td class="py-2">
+                    <button (click)="editCar(car.id)" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Edit
+                    </button>
+                    <button (click)="deleteCar(car.id)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        </tbody>
     </table>
 
-    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)"></mat-paginator>
+    <!-- Pagination -->
+    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)" class="mt-4">
+    </mat-paginator>
 
-    <h3>Add New Car</h3>
-    <form (ngSubmit)="addCar(newCar)">
-        <input [(ngModel)]="newCar.vin" name="vin" placeholder="VIN" required />
-        <input [(ngModel)]="newCar.maker" name="maker" placeholder="Maker" required />
-        <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required />
-        <input [(ngModel)]="newCar.modelYear" name="modelYear" placeholder="Model Year" required />
-        <input [(ngModel)]="newCar.price" name="price" placeholder="Price" required />
-        <button type="submit">Add Car</button>
+    <!-- Add New Car Form -->
+    <h3 class="text-xl font-bold mt-6 mb-4 text-gray-900 dark:text-white">Add New Car</h3>
+    <form (ngSubmit)="addCar(newCar)" class="space-y-4">
+        <!-- Showroom Selection Dropdown -->
+        <select [(ngModel)]="selectedShowroomId" name="showroomId" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
+            <option [value]="null" disabled>Select a Showroom</option>
+            <option *ngFor="let showroom of showrooms" [value]="showroom.id">
+                {{ showroom.name }}
+            </option>
+        </select>
+
+        <!-- Car Details Inputs -->
+        <input [(ngModel)]="newCar.vin" name="vin" placeholder="VIN" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+        <input [(ngModel)]="newCar.maker" name="maker" placeholder="Maker" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+        <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+        <input [(ngModel)]="newCar.modelYear" name="modelYear" placeholder="Model Year" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+        <input [(ngModel)]="newCar.price" name="price" placeholder="Price" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+
+        <!-- Submit Button -->
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Add Car
+        </button>
     </form>
 </div>

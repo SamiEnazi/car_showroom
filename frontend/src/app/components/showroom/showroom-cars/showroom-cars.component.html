@@ -1,0 +1,19 @@
+<div class="showroom-cars-container p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <h2 class="text-3xl font-bold mb-4">Cars in Showroom</h2>
+
+    <ul class="space-y-4">
+        <li *ngFor="let car of cars" class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-semibold">{{ car.maker }} {{ car.model }} ({{ car.modelYear }})</p>
+                    <p class="text-gray-600 dark:text-gray-400">${{ car.price }}</p>
+                </div>
+                <button [routerLink]="['/cars', car.id]" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    View Details
+                </button>
+            </div>
+        </li>
+    </ul>
+
+    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)" class="mt-6"></mat-paginator>
+</div>

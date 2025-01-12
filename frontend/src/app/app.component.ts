@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -8,15 +8,28 @@ import { AuthService } from './core/services/auth.service';
   templateUrl: './app.component.html',
   standalone: true,
   imports: [RouterOutlet, NgIf, RouterModule],
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Car Showroom Management';
   isMenuOpen = false;
   isDarkMode = false;
-  currentYear: number = 999;
+  isLoggedIn = false;
+
+  currentYear: number;
+
   constructor(private authService: AuthService) {
     this.currentYear = new Date().getFullYear();
+  }
+
+  ngOnInit(): void {
+    // Subscribe to the isLoggedIn$ observable to update the login status
+    this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
+      this.isLoggedIn = isLoggedIn;
+    });
+
+    // Initialize the login status based on the current state
+    this.isLoggedIn = this.authService.isLoggedIn();
   }
 
   toggleMenu() {
@@ -32,9 +45,7 @@ export class AppComponent {
     }
   }
 
-  ngOnInit(): void {
-    if (this.authService.isLoggedIn()) {
-      this.authService.fetchUserData().subscribe();
-    }
+  logout() {
+    this.authService.logout();
   }
 }

@@ -24,7 +24,6 @@ export class LoginComponent {
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
-    this.authService.testPublicEndpoint();
   }
 
   onSubmit() {
@@ -33,7 +32,7 @@ export class LoginComponent {
       this.authService.login({ username, password }).subscribe({
         next: (response: any) => {
           localStorage.setItem('token', response.token);
-          this.router.navigate(['/dashboard']);
+          this.router.navigateByUrl('/dashboard');
         },
         error: (err) => {
           this.errorMessage = 'Invalid username or password';

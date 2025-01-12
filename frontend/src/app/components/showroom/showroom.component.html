@@ -1,21 +1,56 @@
-<div class="showroom-container">
-    <h2>Showrooms</h2>
-    <table>
-        <tr *ngFor="let showroom of showrooms">
-            <td>{{ showroom.name }} - {{ showroom.commercialRegistrationNumber }}</td>
-            <td><button (click)="deleteShowroom(showroom.id)">Delete</button></td>
-        </tr>
-    </table>
+<div class="p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <h2 class="text-2xl font-bold mb-4">Showroom Management</h2>
 
-    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)"></mat-paginator>
-
-    <h3>Add New Showroom</h3>
-    <form (ngSubmit)="addShowroom(newShowroom)">
-        <input [(ngModel)]="newShowroom.name" name="name" placeholder="Name" required />
-        <input [(ngModel)]="newShowroom.commercialRegistrationNumber" name="commercialRegistrationNumber" placeholder="Commercial Registration Number" required />
-        <input [(ngModel)]="newShowroom.managerName" name="managerName" placeholder="Manager Name" />
-        <input [(ngModel)]="newShowroom.contactNumber" name="contactNumber" placeholder="Contact Number" required />
-        <input [(ngModel)]="newShowroom.address" name="address" placeholder="Address" />
-        <button type="submit">Add Showroom</button>
+    <!-- Form for creating/updating showrooms -->
+    <form (ngSubmit)="saveShowroom()" class="mb-6 space-y-4">
+        <div>
+            <label for="name" class="block text-sm font-medium">Name</label>
+            <input type="text" id="name" [(ngModel)]="newShowroom.name" name="name" class="mt-1 block w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700" required maxlength="100">
+        </div>
+        <div>
+            <label for="commercialRegistrationNumber" class="block text-sm font-medium">Commercial Registration Number</label>
+            <input type="text" id="commercialRegistrationNumber" [(ngModel)]="newShowroom.commercialRegistrationNumber" name="commercialRegistrationNumber" class="mt-1 block w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700" required maxlength="10">
+        </div>
+        <div>
+            <label for="managerName" class="block text-sm font-medium">Manager Name</label>
+            <input type="text" id="managerName" [(ngModel)]="newShowroom.managerName" name="managerName" class="mt-1 block w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700" maxlength="100">
+        </div>
+        <div>
+            <label for="contactNumber" class="block text-sm font-medium">Contact Number</label>
+            <input type="text" id="contactNumber" [(ngModel)]="newShowroom.contactNumber" name="contactNumber" class="mt-1 block w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700" required maxlength="15">
+        </div>
+        <div>
+            <label for="address" class="block text-sm font-medium">Address</label>
+            <input type="text" id="address" [(ngModel)]="newShowroom.address" name="address" class="mt-1 block w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700" maxlength="255">
+        </div>
+        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            {{ isEditMode ? 'Update Showroom' : 'Create Showroom' }}
+        </button>
+        <button type="button" (click)="resetForm()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Reset</button>
     </form>
+
+    <!-- List of showrooms -->
+    <h3 class="text-xl font-semibold mb-4">Showrooms</h3>
+    <ul class="space-y-4">
+        <li *ngFor="let showroom of showrooms" class="p-4 border rounded dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-semibold">{{ showroom.name }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Commercial Registration: {{ showroom.commercialRegistrationNumber }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Manager: {{ showroom.managerName }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Contact: {{ showroom.contactNumber }}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Address: {{ showroom.address }}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button (click)="editShowroom(showroom)" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</button>
+                    <button (click)="deleteShowroom(showroom.id)" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+                </div>
+            </div>
+        </li>
+    </ul>
+
+    <!-- Paginator -->
+    <div class="mt-6">
+        <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)"></mat-paginator>
+    </div>
 </div>

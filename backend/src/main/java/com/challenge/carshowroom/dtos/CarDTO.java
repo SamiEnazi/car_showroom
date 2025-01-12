@@ -22,7 +22,7 @@ public class CarDTO {
 
     @NotNull(message = "Model year is required")
     @Min(value = 1900, message = "Model year must be after 1900")
-    @Max(value = 2024, message = "Model year must be before 2024")
+    @Max(value = 2026, message = "Model year must be before 2026")
     private int modelYear;
 
     @NotNull(message = "Price is required")

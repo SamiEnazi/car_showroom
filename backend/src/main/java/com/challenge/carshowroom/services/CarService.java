@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class CarService {
@@ -23,7 +24,7 @@ public class CarService {
     private ShowroomRepo showroomRepository;
 
     // Create a new car
-    public Car createCar(CarDTO carDTO) {
+    public Car createCar(CarDTO carDTO) throws NoSuchElementException, RuntimeException {
         Showroom showroom = showroomRepository.findById(carDTO.getShowroomId())
                 .orElseThrow(() -> new RuntimeException("Showroom not found"));
 
@@ -33,7 +34,7 @@ public class CarService {
         car.setModel(carDTO.getModel());
         car.setModelYear(carDTO.getModelYear());
         car.setPrice(carDTO.getPrice());
-        car.setShowroom(showroom);
+        car.setShowroom(showroomRepository.findByIdAndDeletedAtIsNull(carDTO.getShowroomId()).get());
 
         return carRepository.save(car);
     }

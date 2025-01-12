@@ -1,6 +1,5 @@
 <!-- Main Container -->
 <div class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-
   <!-- Navigation Bar -->
   <nav class="bg-blue-600 dark:bg-blue-800 text-white shadow-lg">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -9,9 +8,13 @@
 
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-6 items-center">
-        <a routerLink="/login" class="hover:text-blue-200">Login</a>
-        <a routerLink="/register" class="hover:text-blue-200">Register</a>
-        <a routerLink="/dashboard" class="hover:text-blue-200">Dashboard</a>
+        <!-- Show Login and Register if user is not logged in -->
+        <a *ngIf="!isLoggedIn" routerLink="/login" class="hover:text-blue-200">Login</a>
+        <a *ngIf="!isLoggedIn" routerLink="/register" class="hover:text-blue-200">Register</a>
+
+        <!-- Show Dashboard and Logout if user is logged in -->
+        <a *ngIf="isLoggedIn" routerLink="/dashboard" class="hover:text-blue-200">Dashboard</a>
+        <a *ngIf="isLoggedIn" (click)="logout()" class="cursor-pointer hover:text-blue-200">Logout</a>
 
         <!-- Dark Mode Toggle -->
         <button (click)="toggleDarkMode()" class="p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-900 transition-colors">
@@ -32,9 +35,13 @@
 
     <!-- Mobile Menu -->
     <div *ngIf="isMenuOpen" class="md:hidden bg-blue-700 dark:bg-blue-900">
-      <a routerLink="/login" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Login</a>
-      <a routerLink="/register" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Register</a>
-      <a routerLink="/dashboard" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Dashboard</a>
+      <!-- Show Login and Register if user is not logged in -->
+      <a *ngIf="!isLoggedIn" routerLink="/login" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Login</a>
+      <a *ngIf="!isLoggedIn" routerLink="/register" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Register</a>
+
+      <!-- Show Dashboard and Logout if user is logged in -->
+      <a *ngIf="isLoggedIn" routerLink="/dashboard" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Dashboard</a>
+      <a *ngIf="isLoggedIn" (click)="logout()" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer">Logout</a>
     </div>
   </nav>
 

@@ -70,16 +70,18 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedShowrooms() {
-        seedShowroom("Premium Cars", "1234567890", "1234567890", "123 Main St, City");
-        seedShowroom("Luxury Autos", "0987654321", "0987654321", "456 Elm St, Town");
+        seedShowroom("Premium Cars", "1234567890", "Manager1", "1234567890", "123 Main St, City");
+        seedShowroom("Luxury Autos", "0987654321", "Manager2", "0987654321", "456 Elm St, Town");
     }
 
-    private void seedShowroom(String name, String commercialRegistrationNumber, String contactNumber, String address) {
+    private void seedShowroom(String name, String commercialRegistrationNumber, String managerName,
+            String contactNumber, String address) {
         if (!showroomRepository.findByCommercialRegistrationNumber(commercialRegistrationNumber).isPresent()) {
             Showroom showroom = new Showroom();
             showroom.setName(name);
             showroom.setCommercialRegistrationNumber(commercialRegistrationNumber);
             showroom.setContactNumber(contactNumber);
+            showroom.setManagerName(managerName);
             showroom.setAddress(address);
             showroomRepository.save(showroom);
             logger.info("Showroom created: {}", name);

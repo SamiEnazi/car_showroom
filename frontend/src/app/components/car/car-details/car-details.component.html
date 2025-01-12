@@ -1,0 +1,25 @@
+<div class="car-details-container p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <h2 class="text-3xl font-bold mb-4">Car Details</h2>
+
+    <div *ngIf="car" class="space-y-4">
+        <p><strong>Maker:</strong> {{ car?.maker }}</p>
+        <p><strong>Model:</strong> {{ car?.model }}</p>
+        <p><strong>Year:</strong> {{ car?.modelYear }}</p>
+        <p><strong>Price:</strong> ${{ car?.price }}</p>
+        <p><strong>Showroom Name:</strong> {{ car?.showroom?.name }}</p>
+        <p><strong>Showroom Contact Number:</strong> {{ car?.showroom?.contactNumber }}</p>
+
+
+        <!-- Show buttons only if the user is an admin -->
+        <div *ngIf="isAdmin" class="flex space-x-4">
+            <button (click)="editCar()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                Edit
+            </button>
+            <button (click)="deleteCar()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                Delete
+            </button>
+        </div>
+    </div>
+
+    <p *ngIf="!car" class="text-red-500">Car not found.</p>
+</div>

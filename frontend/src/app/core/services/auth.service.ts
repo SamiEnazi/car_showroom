@@ -2,84 +2,74 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
-  private userSubject = new BehaviorSubject<any>(null); // Holds the user object in memory
-  public user$ = this.userSubject.asObservable(); // Observable to subscribe to user changes
+  private userSubject = new BehaviorSubject<any>(null);
+  private isLoggedInSubject = new BehaviorSubject<boolean>(false);
+  public user$ = this.userSubject.asObservable();
+  public isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // On service initialization, check for a token and fetch user data
     this.initializeUser();
   }
 
-  // Initialize user state on app load
   private initializeUser(): void {
-    const token = this.getToken();
+    const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
     if (token) {
-      this.fetchUserData().subscribe();
+      this.setUser({ token }); // Set user data in memory (you might need to fetch full user data from the server)
+      this.isLoggedInSubject.next(true);
+    } else {
+      this.isLoggedInSubject.next(false);
     }
   }
 
-  // Register a new user
-  register(user: { username: string, email: string, password: string }): Observable<any> {
+  register(user: { username: string; email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/auth/register`, user);
   }
 
-  // Login with username and password
-  login(credentials: { username: string, password: string }): Observable<any> {
+  login(credentials: { username: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/api/auth/login`, credentials).pipe(
       tap((response: any) => {
         if (response.token) {
-          localStorage.setItem('token', response.token); // Store token in localStorage
-          this.fetchUserData().subscribe(); // Fetch user data after login
+          localStorage.setItem('authToken', response.token); // Store token in localStorage
+          this.setUser(response);
+          this.isLoggedInSubject.next(true);
         }
       })
     );
   }
 
-  // Fetch user data from the server
-  fetchUserData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/api/auth/me`).pipe(
-      tap((user: any) => {
-        this.setUser(user); // Set user data in memory
-      })
-    );
-  }
-
-  // Set the user object in memory
   private setUser(user: any): void {
     this.userSubject.next(user);
   }
 
-  // Get the current user object
   getUser(): any {
     return this.userSubject.value;
   }
 
-  // Get the token from localStorage
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('authToken'); // Retrieve token from localStorage
   }
 
-  // Check if the user is logged in
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
 
-  // Logout the user
-  logout(): void {
-    localStorage.removeItem('token'); // Remove the token from localStorage
-    this.userSubject.next(null); // Clear the user object from memory
+  isAdmin(): boolean {
+    const user = this.userSubject.value;
+    return user?.role === 'ADMIN';
   }
 
-  // Test a public endpoint
-  testPublicEndpoint(): void {
-    this.http.get(`${this.apiUrl}/public/test`).subscribe(
-      response => console.log('Public endpoint response:', response)
-    );
+  logout(): void {
+    localStorage.removeItem('authToken'); // Remove token from localStorage
+    this.clearUser();
+    this.isLoggedInSubject.next(false);
+  }
+
+  private clearUser(): void {
+    this.userSubject.next(null);
   }
 }

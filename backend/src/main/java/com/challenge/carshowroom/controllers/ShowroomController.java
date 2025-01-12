@@ -18,37 +18,39 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/showrooms")
 public class ShowroomController {
+
+    private static final String PUBLIC_URL = "/public/showrooms";
+    private static final String ADMIN_URL = "/admin/showrooms";
 
     @Autowired
     private ShowroomService showroomService;
 
-    @PostMapping
+    @PostMapping(ADMIN_URL + "/create")
     public ResponseEntity<Showroom> createShowroom(@RequestBody ShowroomDTO showroomDTO) {
         Showroom showroom = showroomService.createShowroom(showroomDTO);
         return ResponseEntity.ok(showroom);
     }
 
-    @GetMapping
+    @GetMapping(PUBLIC_URL)
     public ResponseEntity<Page<Showroom>> getAllShowrooms(Pageable pageable) {
         Page<Showroom> showrooms = showroomService.getAllShowrooms(pageable);
         return ResponseEntity.ok(showrooms);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(PUBLIC_URL + "/{id}")
     public ResponseEntity<Showroom> getShowroomById(@PathVariable Long id) {
         Showroom showroom = showroomService.getShowroomById(id);
         return ResponseEntity.ok(showroom);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(ADMIN_URL + "/update/{id}")
     public ResponseEntity<Showroom> updateShowroom(@PathVariable Long id, @RequestBody ShowroomDTO showroomDTO) {
         Showroom showroom = showroomService.updateShowroom(id, showroomDTO);
         return ResponseEntity.ok(showroom);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(ADMIN_URL + "/delete/{id}")
     public ResponseEntity<Void> deleteShowroom(@PathVariable Long id) {
         showroomService.deleteShowroom(id);
         return ResponseEntity.noContent().build();

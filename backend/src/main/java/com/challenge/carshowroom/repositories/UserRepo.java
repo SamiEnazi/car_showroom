@@ -16,4 +16,6 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     // Find all active users with pagination
     Page<User> findByDeletedAtIsNull(Pageable pageable);
+
+    Optional<User> findByEmail(String email);
 }

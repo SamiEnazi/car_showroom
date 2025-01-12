@@ -1,6 +1,7 @@
 package com.challenge.carshowroom.controllers;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -68,7 +69,8 @@ public class AuthController {
             return ResponseEntity.ok(new AuthResponse(
                     jwtToken,
                     userDetails.getId(),
-                    userDetails.getUsername()));
+                    userDetails.getUsername(),
+                    userDetails.getRole()));
         } catch (BadCredentialsException e) {
             // Handle invalid credentials
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
@@ -86,6 +88,11 @@ public class AuthController {
             logger.error("Exisiting User!", existingUser);
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
         }
+        existingUser = userRepo.findByEmail(registerRequest.getEmail());
+        if (existingUser.isPresent()) {
+            logger.error("Exisiting User!", existingUser);
+            return ResponseEntity.badRequest().body("Error: Email is already taken!");
+        }
 
         // Create a new user
         User user = new User();
@@ -99,6 +106,8 @@ public class AuthController {
         userRepo.save(user);
 
         // Return a success response
-        return ResponseEntity.ok("User registered successfully!");
+
+        return ResponseEntity.ok((new HashMap<String, String>()).put("message", "User Created Successfully!"));
     }
+
 }

@@ -1,3 +1,5 @@
+import { Showroom } from "./showroom";
+
 export interface Car {
     id: number;
     vin: string;
@@ -5,5 +7,6 @@ export interface Car {
     model: string;
     modelYear: number;
     price: number;
+    showroom: Showroom;
     showroomId: number;
 }
