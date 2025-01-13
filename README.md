@@ -114,8 +114,8 @@ frontend/src/
    ```typescript
    // src/environments/environment.ts
    export const environment = {
-     production: false,
-     apiUrl: "http://localhost:8081",
+     production: true,
+     apiUrl: "/api",
    };
    ```
 
@@ -128,8 +128,8 @@ frontend/src/
 
 ### Authentication
 
-- POST `/api/auth/login` - User login
-- POST `/api/auth/register` - User registration
+- POST `/auth/login` - User login
+- POST `/auth/register` - User registration
 
 ### Public APIs
 
@@ -182,20 +182,6 @@ frontend/src/
 4. Frontend caching assumes moderate data size
 5. Image uploads not implemented (URLs only)
 
-## Testing
-
-### Backend Testing
-
-- Use Postman collection provided in `/docs/postman`
-- Unit tests available in test packages
-- Integration tests for critical paths
-
-### Frontend Testing
-
-- Component tests using Jasmine/Karma
-- End-to-end tests using Cypress
-- Manual testing checklist in `/docs/testing`
-
 ## Performance Considerations
 
 1. Database indexing on frequently queried fields
@@ -211,7 +197,3 @@ frontend/src/
 3. Enhance caching strategy
 4. Add more comprehensive logging
 5. Implement real-time notifications
-
-## License
-
-This project is licensed under the MIT License.
