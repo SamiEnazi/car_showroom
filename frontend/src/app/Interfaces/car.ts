@@ -6,6 +6,7 @@ export interface Car {
     maker: string;
     model: string;
     modelYear: number;
+    imageUrl?: string;
     price: number;
     showroom: Showroom;
     showroomId: number;

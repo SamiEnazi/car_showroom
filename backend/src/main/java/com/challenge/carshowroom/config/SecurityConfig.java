@@ -35,10 +35,13 @@ import com.challenge.carshowroom.security.UserDetailsServiceImpl;
 public class SecurityConfig {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private final JwtUtils jwtUtils;
+    private final UserDetailsService userDetailsService;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    public SecurityConfig(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+        this.jwtUtils = jwtUtils;
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public JwtAuthFilter jwtAuthFilter() {
@@ -68,7 +71,7 @@ public class SecurityConfig {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**").permitAll() // Allow access to authentication endpoints
+                        .requestMatchers("/auth/**").permitAll() // Allow access to authentication endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Restrict admin endpoints
                         .requestMatchers("/public/**").permitAll() // Allow access to public endpoints
                         .anyRequest().authenticated()) // Require authentication for all other requests

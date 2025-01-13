@@ -2,6 +2,7 @@ package com.challenge.carshowroom.controllers;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +33,7 @@ import com.challenge.carshowroom.security.JwtUtils;
 import com.challenge.carshowroom.security.UserDetailsImpl;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
@@ -107,7 +109,21 @@ public class AuthController {
 
         // Return a success response
 
-        return ResponseEntity.ok((new HashMap<String, String>()).put("message", "User Created Successfully!"));
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "User Created Successfully!");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        return ResponseEntity.ok(new AuthResponse(
+                null, // Don't send token back
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getRole()));
     }
 
 }

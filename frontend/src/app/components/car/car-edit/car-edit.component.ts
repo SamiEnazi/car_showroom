@@ -15,6 +15,8 @@ import { NotificationsService } from '../../../core/services/notifications.servi
 })
 export class CarEditComponent implements OnInit {
   car: Car | null = null;
+  isLoading: boolean = false;
+  error: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,25 +33,40 @@ export class CarEditComponent implements OnInit {
   }
 
   loadCarDetails(carId: number): void {
-    this.carService.getAllCars(0, 10).subscribe((response) => {
-      this.car = response.content.find((car: Car) => car.id === carId) || null;
+    this.isLoading = true;
+    this.error = null;
+
+    this.carService.getCarById(carId).subscribe({
+      next: (car) => {
+        this.car = car;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.error = 'Failed to load car details';
+        this.notifications.showError('Failed to load car details', 'Error');
+        console.error('Error loading car:', error);
+      }
     });
   }
 
   updateCar(): void {
     if (this.car) {
-      this.carService.updateCar(this.car.id, this.car).subscribe(() => {
-        this.router.navigate(['/cars', this.car?.id]);
-        this.notifications.showSuccess('Car Updated Successfully!', 'Success');
-      }, (error) => {
-        console.error(error);
-        if (error.error) {
-          const errorMessages = Object.values(error.error).join(', ');
-          this.notifications.showError(errorMessages, 'Error');
-        } else if (error.status) {
-          this.notifications.showError('Unauthorized!', 'Error');
-        } else {
-          this.notifications.showError('An error occurred while updating the car!', 'Error');
+      this.carService.updateCar(this.car.id, this.car).subscribe({
+        next: () => {
+          this.notifications.showSuccess('Car Updated Successfully!', 'Success');
+          this.router.navigate(['/cars', this.car?.id]);
+        },
+        error: (error) => {
+          console.error('Error updating car:', error);
+          if (error.error) {
+            const errorMessages = Object.values(error.error).join(', ');
+            this.notifications.showError(errorMessages, 'Error');
+          } else if (error.status === 401) {
+            this.notifications.showError('Unauthorized!', 'Error');
+          } else {
+            this.notifications.showError('An error occurred while updating the car!', 'Error');
+          }
         }
       });
     }

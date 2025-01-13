@@ -1,35 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   standalone: true,
-  imports: [RouterOutlet, NgIf, RouterModule],
+  imports: [RouterOutlet, NgIf, RouterModule, AsyncPipe],
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'Car Showroom Management';
   isMenuOpen = false;
   isDarkMode = false;
-  isLoggedIn = false;
-
+  isLoggedIn$ = this.authService.isLoggedIn$;
+  user$ = this.authService.user$;
+  isAdmin$ = this.user$.pipe(
+    map(user => user?.role === 'ADMIN')
+  );
   currentYear: number;
 
   constructor(private authService: AuthService) {
     this.currentYear = new Date().getFullYear();
-  }
-
-  ngOnInit(): void {
-    // Subscribe to the isLoggedIn$ observable to update the login status
-    this.authService.isLoggedIn$.subscribe((isLoggedIn) => {
-      this.isLoggedIn = isLoggedIn;
-    });
-
-    // Initialize the login status based on the current state
-    this.isLoggedIn = this.authService.isLoggedIn();
   }
 
   toggleMenu() {
@@ -38,11 +32,7 @@ export class AppComponent implements OnInit {
 
   toggleDarkMode() {
     this.isDarkMode = !this.isDarkMode;
-    if (this.isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', this.isDarkMode);
   }
 
   logout() {

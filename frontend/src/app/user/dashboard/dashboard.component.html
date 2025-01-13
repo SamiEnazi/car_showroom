@@ -1,13 +1,16 @@
 <div class="dashboard-container p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-    <h2 class="text-3xl font-bold mb-4">Welcome, {{ userName }}!</h2>
+    <h2 class="text-3xl font-bold mb-4">Welcome, {{ (user$ | async)?.username || 'Dear Guest' }}!</h2>
+
 
     <!-- Sorting and Filtering Section -->
     <div class="mb-6 space-y-4">
         <!-- Showroom Filter -->
         <div class="flex space-x-4">
             <select [(ngModel)]="selectedShowroomId" (ngModelChange)="onShowroomFilterChange()" class="p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-                <option [value]="null" selected disabled>All Showrooms</option>
-                <option *ngFor="let showroom of showrooms" [value]="showroom.id">{{ showroom.name }}</option>
+                <option [ngValue]="null">All Showrooms</option>
+                <option *ngFor="let showroom of showrooms" [ngValue]="showroom.id">
+                    {{ showroom.name }}
+                </option>
             </select>
         </div>
 
@@ -38,47 +41,62 @@
         </div>
     </div>
 
-    <!-- Showrooms List -->
-    <h3 class="text-2xl font-semibold mb-4">Showrooms</h3>
-    <ul class="space-y-4">
-        <li *ngFor="let showroom of showrooms" class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-            <div class="flex justify-between items-center">
-                <div>
-                    <p class="text-lg font-semibold">{{ showroom.name }}</p>
-                    <p class="text-gray-600 dark:text-gray-400">Commercial Registration: {{ showroom.commercialRegistrationNumber }}</p>
-                    <p class="text-gray-600 dark:text-gray-400">Contact: {{ showroom.contactNumber }}</p>
-                </div>
-                <!-- Admin-specific buttons -->
-                <div *ngIf="isAdmin" class="flex space-x-2">
-                    <button (click)="editShowroom(showroom.id)" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
-                        Edit
-                    </button>
-                    <button (click)="deleteShowroom(showroom.id)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                        Delete
-                    </button>
-                </div>
-            </div>
-
-            <!-- Cars List for the Showroom -->
-            <h4 class="text-xl font-semibold mt-4 mb-2">Cars in {{ showroom.name }}</h4>
-            <ul class="space-y-4">
-                <li *ngFor="let car of getCarsForShowroom(showroom.id)" class="p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-lg font-semibold">{{ car.maker }} {{ car.model }} ({{ car.modelYear }})</p>
-                            <p class="text-gray-600 dark:text-gray-400">${{ car.price }}</p>
+    <!-- Cars Grid -->
+    <div class="space-y-4">
+        <h3 class="text-2xl font-semibold mb-4">Available Cars</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Car Card -->
+            <div *ngFor="let car of recentCars" class="flex flex-col sm:flex-row p-4 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 gap-6">
+                <!-- Car Image Section -->
+                <div class="w-full sm:w-80 flex-shrink-0">
+                    <div class="relative rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 aspect-[4/3]">
+                        <img *ngIf="car.imageUrl" [src]="car.imageUrl" [alt]="car.maker + ' ' + car.model" class="absolute inset-0 w-full h-full object-cover" />
+                        <div *ngIf="!car.imageUrl" class="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                            </svg>
                         </div>
-                        <button (click)="viewDetails(car.id)" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                    </div>
+                </div>
+
+                <!-- Car Details Section -->
+                <div class="flex-1 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2">{{ car.maker }} {{ car.model }}</h4>
+                        <p class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">{{ car.modelYear }}</p>
+                        <p class="text-2xl font-bold text-green-600 dark:text-green-400 mb-3">${{ car.price.toLocaleString() }}</p>
+                        <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <p>Showroom: {{ car.showroom?.name }}</p>
+                            <p>VIN: {{ car.vin }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-4">
+                        <button (click)="viewDetails(car.id)" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                             View Details
                         </button>
+                        <div *ngIf="isAdmin$ | async" class="flex gap-2">
+                            <button (click)="editCar(car.id)" class="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors">
+                                Edit
+                            </button>
+                            <button (click)="deleteCar(car.id)" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                Delete
+                            </button>
+                        </div>
                     </div>
-                </li>
-            </ul>
-        </li>
-    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div *ngIf="recentCars.length === 0" class="text-center p-4">
+            <p class="text-gray-600 dark:text-gray-400">No cars found matching your criteria.</p>
+        </div>
+    </div>
 
     <!-- Paginator -->
-    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)" class="mt-6"></mat-paginator>
+    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" [pageSizeOptions]="[5, 10, 25, 50]" (page)="onPageChange($event)" class="mt-6 dark:bg-gray-900 dark:text-gray-100 [&_.mat-mdc-paginator-icon]:dark:invert">
+    </mat-paginator>
 
     <!-- Error Message -->
     <p *ngIf="errorMessage" class="mt-4 text-red-500">{{ errorMessage }}</p>

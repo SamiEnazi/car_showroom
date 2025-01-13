@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay } from 'rxjs';
+import { catchError, Observable, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Showroom } from '../../Interfaces/showroom';
 
@@ -45,13 +45,22 @@ export class ShowroomService {
 
   // Update an existing showroom
   updateShowroom(id: number, showroom: Showroom): Observable<Showroom> {
-    this.allShowroomsCache$ = null; // Invalidate cache
+    this.allShowroomsCache$ = null;
     return this.http.put<Showroom>(`${this.AdminApiUrl}/update/${id}`, showroom);
   }
 
-  // Delete a showroom
+
   deleteShowroom(id: number): Observable<void> {
-    this.allShowroomsCache$ = null; // Invalidate cache
-    return this.http.delete<void>(`${this.AdminApiUrl}/delete/${id}`);
+    this.allShowroomsCache$ = null;
+    return this.http.delete<void>(`${this.AdminApiUrl}/delete/${id}`).pipe(
+      catchError(error => {
+        console.error('Delete showroom error details:', {
+          status: error.status,
+          message: error.error?.message || error.message,
+          error: error.error
+        });
+        return throwError(() => error);
+      })
+    );
   }
 }

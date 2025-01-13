@@ -5,6 +5,7 @@ import { Car } from '../../../Interfaces/car';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationsService } from '../../../core/services/notifications.service';
 
 @Component({
   selector: 'app-car-details',
@@ -16,11 +17,15 @@ import { AuthService } from '../../../core/services/auth.service';
 export class CarDetailsComponent implements OnInit {
   car: Car | null = null;
   isAdmin: boolean = false;
+  isLoading: boolean = false;
+  error: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private carService: CarService,
-    private authService: AuthService
+    private authService: AuthService,
+    private notifications: NotificationsService
   ) { }
 
   ngOnInit(): void {
@@ -32,8 +37,20 @@ export class CarDetailsComponent implements OnInit {
   }
 
   loadCarDetails(carId: number): void {
-    this.carService.getAllCars(0, 10).subscribe((response) => {
-      this.car = response.content.find((car: Car) => car.id === carId) || null;
+    this.isLoading = true;
+    this.error = null;
+
+    this.carService.getCarById(carId).subscribe({
+      next: (car) => {
+        this.car = car;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.error = 'Failed to load car details';
+        this.notifications.showError('Failed to load car details', 'Error');
+        console.error('Error loading car:', error);
+      }
     });
   }
 
@@ -44,9 +61,16 @@ export class CarDetailsComponent implements OnInit {
   }
 
   deleteCar(): void {
-    if (this.car) {
-      this.carService.deleteCar(this.car.id).subscribe(() => {
-        this.router.navigate(['/dashboard']);
+    if (this.car && confirm('Are you sure you want to delete this car?')) {
+      this.carService.deleteCar(this.car.id).subscribe({
+        next: () => {
+          //this.notifications.showSuccess('Car deleted successfully', 'Success');
+          this.router.navigate(['/dashboard']);
+        },
+        error: (error) => {
+          this.notifications.showError('Failed to delete car', 'Error');
+          console.error('Error deleting car:', error);
+        }
       });
     }
   }

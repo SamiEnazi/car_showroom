@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay } from 'rxjs';
+import { catchError, Observable, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Car } from '../../Interfaces/car';
 
@@ -44,25 +44,26 @@ export class CarService {
     return this.carsByShowroomCache.get(cacheKey)!;
   }
 
-  // Get all cars with caching
-  getAllCars(
-    page: number,
-    size: number,
-    sortBy?: string,
-    sortOrder?: string,
-    minPrice?: number,
-    maxPrice?: number
-  ): Observable<any> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+  getAllCars(params: {
+    page: number;
+    size: number;
+    sortBy?: string;
+    sortOrder?: string;
+    minPrice?: number | null;
+    maxPrice?: number | null;
+    showroomId?: number | null;
+  }): Observable<any> {
+    let httpParams = new HttpParams()
+      .set('page', params.page.toString())
+      .set('size', params.size.toString());
 
-    if (sortBy) params = params.set('sortBy', sortBy);
-    if (sortOrder) params = params.set('sortOrder', sortOrder);
-    if (minPrice) params = params.set('minPrice', minPrice.toString());
-    if (maxPrice) params = params.set('maxPrice', maxPrice.toString());
+    if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
+    if (params.sortOrder) httpParams = httpParams.set('sortOrder', params.sortOrder);
+    if (params.minPrice) httpParams = httpParams.set('minPrice', params.minPrice.toString());
+    if (params.maxPrice) httpParams = httpParams.set('maxPrice', params.maxPrice.toString());
+    if (params.showroomId) httpParams = httpParams.set('showroomId', params.showroomId.toString());
 
-    return this.http.get<any>(this.publicApiUrl, { params });
+    return this.http.get<any>(this.publicApiUrl, { params: httpParams });
   }
 
   // Update a car
@@ -77,6 +78,15 @@ export class CarService {
   deleteCar(id: number): Observable<void> {
     // Invalidate the cache when a car is deleted
     this.allCarsCache$ = null;
-    return this.http.delete<void>(`${this.AdminApiUrl}/delete/${id}`);
+    return this.http.delete<void>(`${this.AdminApiUrl}/delete/${id}`).pipe(
+      catchError(error => {
+        console.error('Delete showroom error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getCarById(id: number): Observable<Car> {
+    return this.http.get<Car>(`${this.publicApiUrl}/${id}`);
   }
 }

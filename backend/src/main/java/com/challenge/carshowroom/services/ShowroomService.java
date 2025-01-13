@@ -51,7 +51,13 @@ public class ShowroomService {
         return showroomRepository.save(showroom);
     }
 
+    @Transactional
     public void deleteShowroom(Long id) {
+        Optional<Showroom> showroom = showroomRepository.findByIdAndDeletedAtIsNull(id);
+        if (showroom.isEmpty()) {
+            throw new RuntimeException("Showroom not found");
+        }
+        showroomRepository.softDeleteCarsForShowroom(id);
         showroomRepository.softDeleteById(id);
     }
 }

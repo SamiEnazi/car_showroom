@@ -13,6 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import com.challenge.carshowroom.models.Showroom;
 
+import jakarta.transaction.Transactional;
+
 @Repository
 public interface ShowroomRepo extends JpaRepository<Showroom, Long> {
     // Find all active showrooms with pagination
@@ -24,9 +26,14 @@ public interface ShowroomRepo extends JpaRepository<Showroom, Long> {
     // Find By
     Optional<Showroom> findByCommercialRegistrationNumber(String crn);
 
-    // Soft delete a showroom by setting deleted_at to the current timestamp
     @Modifying
-    @Query("UPDATE Showroom s SET s.deletedAt = CURRENT_TIMESTAMP WHERE s.id = :id")
+    @Transactional
+    @Query("UPDATE Showroom s SET s.deletedAt = CURRENT_TIMESTAMP WHERE s.id = :id AND s.deletedAt IS NULL")
     void softDeleteById(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Car c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.showroom.id = :showroomId AND c.deletedAt IS NULL")
+    void softDeleteCarsForShowroom(@Param("showroomId") Long showroomId);
 
 }

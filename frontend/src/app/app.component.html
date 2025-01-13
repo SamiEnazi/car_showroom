@@ -8,13 +8,25 @@
 
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-6 items-center">
-        <!-- Show Login and Register if user is not logged in -->
-        <a *ngIf="!isLoggedIn" routerLink="/login" class="hover:text-blue-200">Login</a>
-        <a *ngIf="!isLoggedIn" routerLink="/register" class="hover:text-blue-200">Register</a>
+        <!-- Public Routes -->
+        <a routerLink="/showrooms" class="hover:text-blue-200">Showrooms</a>
 
-        <!-- Show Dashboard and Logout if user is logged in -->
-        <a *ngIf="isLoggedIn" routerLink="/dashboard" class="hover:text-blue-200">Dashboard</a>
-        <a *ngIf="isLoggedIn" (click)="logout()" class="cursor-pointer hover:text-blue-200">Logout</a>
+        <!-- Admin Only Routes -->
+        <ng-container *ngIf="(isAdmin$ | async) && (isLoggedIn$ | async)">
+          <a routerLink="/cars" class="hover:text-blue-200">Manage Cars</a>
+        </ng-container>
+
+        <!-- Authentication Routes -->
+        <ng-container *ngIf="!(isLoggedIn$ | async)">
+          <a routerLink="/login" class="hover:text-blue-200">Login</a>
+          <a routerLink="/register" class="hover:text-blue-200">Register</a>
+        </ng-container>
+
+        <!-- Logged In User Routes -->
+        <ng-container *ngIf="isLoggedIn$ | async">
+          <a routerLink="/dashboard" class="hover:text-blue-200">Dashboard</a>
+          <a (click)="logout()" class="cursor-pointer hover:text-blue-200">Logout</a>
+        </ng-container>
 
         <!-- Dark Mode Toggle -->
         <button (click)="toggleDarkMode()" class="p-2 rounded-full hover:bg-blue-700 dark:hover:bg-blue-900 transition-colors">
@@ -35,13 +47,25 @@
 
     <!-- Mobile Menu -->
     <div *ngIf="isMenuOpen" class="md:hidden bg-blue-700 dark:bg-blue-900">
-      <!-- Show Login and Register if user is not logged in -->
-      <a *ngIf="!isLoggedIn" routerLink="/login" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Login</a>
-      <a *ngIf="!isLoggedIn" routerLink="/register" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Register</a>
+      <!-- Public Routes -->
+      <a routerLink="/showrooms" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Showrooms</a>
 
-      <!-- Show Dashboard and Logout if user is logged in -->
-      <a *ngIf="isLoggedIn" routerLink="/dashboard" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Dashboard</a>
-      <a *ngIf="isLoggedIn" (click)="logout()" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer">Logout</a>
+      <!-- Admin Only Routes -->
+      <ng-container *ngIf="(isAdmin$ | async) && (isLoggedIn$ | async)">
+        <a routerLink="/cars" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Manage Cars</a>
+      </ng-container>
+
+      <!-- Authentication Routes -->
+      <ng-container *ngIf="!(isLoggedIn$ | async)">
+        <a routerLink="/login" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Login</a>
+        <a routerLink="/register" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Register</a>
+      </ng-container>
+
+      <!-- Logged In User Routes -->
+      <ng-container *ngIf="isLoggedIn$ | async">
+        <a routerLink="/dashboard" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700">Dashboard</a>
+        <a (click)="logout()" class="block px-4 py-2 hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer">Logout</a>
+      </ng-container>
     </div>
   </nav>
 

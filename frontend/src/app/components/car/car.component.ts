@@ -18,148 +18,185 @@ import { ShowroomService } from '../../core/services/showroom.service';
 })
 export class CarComponent implements OnInit {
   cars: Car[] = [];
-  showroomId: number = 0;
+  showrooms: Showroom[] = [];
+  isLoading: boolean = false;
+  error: string | null = null;
+
+  // Pagination
   page: number = 0;
   size: number = 10;
   totalElements: number = 0;
-  isDarkMode: boolean = false;
-  showrooms: Showroom[] = [];
+
+  // Filters
   selectedShowroomId: number | null = null;
-  showroomPage: number = 0;
-  showroomSize: number = 100; // Adjust based on your API's max page size
-  showroomTotalElements: number = 0;
-  // Define the newCar property and initialize it with default values
-  newCar: Car = {
-    id: 0,
-    vin: '',
-    maker: '',
-    model: '',
-    modelYear: 0,
-    price: 0,
-    showroom: {} as Showroom,
-    showroomId: 0,
-  };
+
+  // Form
+  newCar: Car = this.getEmptyCarObject();
 
   constructor(
     private carService: CarService,
     private showroomService: ShowroomService,
-    private notification: NotificationsService,
+    private notifications: NotificationsService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.loadCars();
     this.loadShowrooms();
-    this.checkDarkMode();
-  }
-  // Load all showrooms for the dropdown
-  loadShowrooms(): void {
-    this.showroomService.getAllShowrooms(this.showroomPage, this.showroomSize).subscribe(
-      (response: any) => {
-        this.showrooms = [...this.showrooms, ...response.content]; // Append new showrooms
-        this.showroomTotalElements = response.totalElements;
-
-        // If there are more showrooms to load, fetch the next page
-        if (this.showrooms.length < this.showroomTotalElements) {
-          this.showroomPage++;
-          this.loadShowrooms();
-        }
-      },
-      (error) => {
-        this.notification.showError('Failed to load showrooms.', 'Error');
-      }
-    );
-  }
-  // Load cars based on pagination and showroom ID
-  loadCars(): void {
-    if (this.showroomId > 0) {
-      this.carService.getCarsByShowroom(this.showroomId, this.page, this.size).subscribe((response) => {
-        this.cars = response.content;
-        this.totalElements = response.totalElements;
-      });
-    } else {
-      this.carService.getAllCars(this.page, this.size).subscribe((response) => {
-        this.cars = response.content;
-        this.totalElements = response.totalElements;
-      });
-    }
+    this.loadCars();
   }
 
-  addCar(car: Car): void {
-    if (!this.selectedShowroomId) {
-      this.notification.showError('Please select a showroom before adding a car.', 'Error');
-      return;
-    }
-
-    // Set the showroomId for the new car
-    car.showroomId = this.selectedShowroomId;
-
-    this.carService.createCar(car).subscribe(
-      () => {
-        this.loadCars(); // Refresh the car list
-        this.resetNewCarForm(); // Reset the form
-        this.notification.showSuccess('Car added successfully!', 'Success');
-      },
-      (error) => {
-        this.notification.showError('Failed to add car. Please try again.', 'Error');
-      }
-    );
-  }
-  editCar(carId: number): void {
-    this.router.navigate(['/cars', carId, 'edit']);
-    this.notification.showSuccess('Navigating to edit car...', 'Success');
-  }
-  // Reset the newCar form
-  resetNewCarForm(): void {
-    this.newCar = {
+  private getEmptyCarObject(): Car {
+    return {
       id: 0,
       vin: '',
       maker: '',
       model: '',
-      modelYear: 0,
+      modelYear: new Date().getFullYear(),
       price: 0,
       showroom: {} as Showroom,
       showroomId: 0,
     };
   }
 
-  // Handle pagination changes
-  onPageChange(event: any): void {
+  loadShowrooms(): void {
+    this.isLoading = true;
+
+    this.showroomService.getAllShowrooms(0, 1000).subscribe({
+      next: (response: any) => {
+        this.showrooms = response.content;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.error = 'Failed to load showrooms';
+        this.isLoading = false;
+        this.notifications.showError('Failed to load showrooms', 'Error');
+        console.error('Error loading showrooms:', error);
+      }
+    });
+  }
+
+  loadCars(): void {
+    this.isLoading = true;
+    this.error = null;
+
+    const params = {
+      page: this.page,
+      size: this.size,
+      showroomId: this.selectedShowroomId
+    };
+
+    this.carService.getAllCars(params).subscribe({
+      next: (response: any) => {
+        this.cars = response.content;
+        this.totalElements = response.totalElements;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.error = 'Failed to load cars';
+        this.isLoading = false;
+        this.notifications.showError('Failed to load cars', 'Error');
+        console.error('Error loading cars:', error);
+      }
+    });
+  }
+
+  onShowroomChange(): void {
+    this.page = 0; // Reset to first page when changing showroom
+    this.loadCars();
+  }
+
+  onPageChange(event: PageEvent): void {
     this.page = event.pageIndex;
     this.size = event.pageSize;
     this.loadCars();
   }
 
-  // Delete a car
-  deleteCar(id: number): void {
-    this.carService.deleteCar(id).subscribe(
-      (response) => {
+  addCar(): void {
+    if (!this.selectedShowroomId) {
+      this.notifications.showError('Please select a showroom', 'Error');
+      return;
+    }
+
+    if (!this.validateCar(this.newCar)) {
+      return;
+    }
+
+    this.newCar.showroomId = this.selectedShowroomId;
+    this.isLoading = true;
+
+    this.carService.createCar(this.newCar).subscribe({
+      next: () => {
+        this.notifications.showSuccess('Car added successfully', 'Success');
+        this.resetForm();
         this.loadCars();
-        this.notification.showSuccess('Car deleted successfully!', 'Success');
       },
-      (error) => {
+      error: (error) => {
+        this.isLoading = false;
         if (error.error) {
           const errorMessages = Object.values(error.error).join(', ');
-          this.notification.showError(errorMessages, 'Error');
+          this.notifications.showError(errorMessages, 'Error');
         } else {
-          this.notification.showError('An error occurred while deleting the car.', 'Error');
+          this.notifications.showError('Failed to add car', 'Error');
         }
+        console.error('Error adding car:', error);
       }
-    );
+    });
   }
 
-  // Check and apply dark mode
-  checkDarkMode(): void {
-    this.isDarkMode = document.documentElement.classList.contains('dark');
-  }
-
-  // Toggle dark mode
-  toggleDarkMode(): void {
-    this.isDarkMode = !this.isDarkMode;
-    if (this.isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+  private validateCar(car: Car): boolean {
+    if (!car.vin || car.vin.trim() === '') {
+      this.notifications.showError('VIN is required', 'Error');
+      return false;
     }
+    if (!car.maker || car.maker.trim() === '') {
+      this.notifications.showError('Maker is required', 'Error');
+      return false;
+    }
+    if (!car.model || car.model.trim() === '') {
+      this.notifications.showError('Model is required', 'Error');
+      return false;
+    }
+    if (!car.modelYear || car.modelYear < 1900) {
+      this.notifications.showError('Please enter a valid year', 'Error');
+      return false;
+    }
+    if (!car.price || car.price <= 0) {
+      this.notifications.showError('Please enter a valid price', 'Error');
+      return false;
+    }
+    return true;
+  }
+
+  editCar(carId: number): void {
+    this.router.navigate(['/cars', carId, 'edit']);
+  }
+
+  deleteCar(id: number): void {
+    if (!confirm('Are you sure you want to delete this car?')) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.carService.deleteCar(id).subscribe({
+      next: () => {
+        this.notifications.showSuccess('Car deleted successfully', 'Success');
+        this.loadCars();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        if (error.error) {
+          const errorMessages = Object.values(error.error).join(', ');
+          this.notifications.showError(errorMessages, 'Error');
+        } else {
+          this.notifications.showError('Failed to delete car', 'Error');
+        }
+        console.error('Error deleting car:', error);
+      }
+    });
+  }
+
+  resetForm(): void {
+    this.newCar = this.getEmptyCarObject();
+    this.selectedShowroomId = null;
   }
 }

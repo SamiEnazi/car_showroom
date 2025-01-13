@@ -34,7 +34,7 @@ public class AuthService {
         String jwt = jwtUtils.generateJwtToken(auth);
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 
-        return new AuthResponse(jwt, userDetails.getId(), userDetails.getUsername());
+        return new AuthResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getRole());
     }
 
     public String register(AuthRequest authReq) {

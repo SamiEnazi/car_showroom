@@ -1,56 +1,138 @@
-<div class="car-container bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Cars</h2>
+<div class="container mx-auto p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold dark:text-white">Car Management</h1>
+    </div>
 
-    <!-- Cars Table -->
-    <table class="w-full text-left">
-        <thead>
-            <tr class="border-b border-gray-200 dark:border-gray-700">
-                <th class="py-2 text-gray-900 dark:text-white">Car Details</th>
-                <th class="py-2 text-gray-900 dark:text-white">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let car of cars" class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-2 text-gray-900 dark:text-white">
-                    {{ car.maker }} {{ car.model }} ({{ car.modelYear }}) - ${{ car.price }}
-                </td>
-                <td class="py-2">
-                    <button (click)="editCar(car.id)" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                        Edit
-                    </button>
-                    <button (click)="deleteCar(car.id)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <!-- Add Car Form -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 dark:text-white">Add New Car</h2>
 
-    <!-- Pagination -->
-    <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" (page)="onPageChange($event)" class="mt-4">
-    </mat-paginator>
+        <form (ngSubmit)="addCar()" class="space-y-4">
+            <!-- Showroom Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Showroom</label>
+                <select [(ngModel)]="selectedShowroomId" name="showroomId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                    <option [ngValue]="null">Select a showroom</option>
+                    <option *ngFor="let showroom of showrooms" [ngValue]="showroom.id">
+                        {{ showroom.name }}
+                    </option>
+                </select>
+            </div>
 
-    <!-- Add New Car Form -->
-    <h3 class="text-xl font-bold mt-6 mb-4 text-gray-900 dark:text-white">Add New Car</h3>
-    <form (ngSubmit)="addCar(newCar)" class="space-y-4">
-        <!-- Showroom Selection Dropdown -->
-        <select [(ngModel)]="selectedShowroomId" name="showroomId" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white">
-            <option [value]="null" disabled>Select a Showroom</option>
-            <option *ngFor="let showroom of showrooms" [value]="showroom.id">
-                {{ showroom.name }}
-            </option>
-        </select>
+            <!-- Car Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">VIN</label>
+                    <input type="text" [(ngModel)]="newCar.vin" name="vin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
 
-        <!-- Car Details Inputs -->
-        <input [(ngModel)]="newCar.vin" name="vin" placeholder="VIN" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
-        <input [(ngModel)]="newCar.maker" name="maker" placeholder="Maker" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
-        <input [(ngModel)]="newCar.model" name="model" placeholder="Model" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
-        <input [(ngModel)]="newCar.modelYear" name="modelYear" placeholder="Model Year" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
-        <input [(ngModel)]="newCar.price" name="price" placeholder="Price" required class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Maker</label>
+                    <input type="text" [(ngModel)]="newCar.maker" name="maker" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Add Car
-        </button>
-    </form>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+                    <input type="text" [(ngModel)]="newCar.model" name="model" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
+                    <input type="number" [(ngModel)]="newCar.modelYear" name="modelYear" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
+                    <input type="text" [(ngModel)]="newCar.imageUrl" name="imageUrl" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price</label>
+                    <input type="number" [(ngModel)]="newCar.price" name="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3">
+                <button type="button" (click)="resetForm()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600">
+                    Reset
+                </button>
+                <button type="submit" [disabled]="isLoading" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                    {{ isLoading ? 'Adding...' : 'Add Car' }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cars List -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-4 dark:text-white">Cars</h2>
+
+            <!-- Filter -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Showroom</label>
+                <select [(ngModel)]="selectedShowroomId" (ngModelChange)="onShowroomChange()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option [ngValue]="null">All Showrooms</option>
+                    <option *ngFor="let showroom of showrooms" [ngValue]="showroom.id">
+                        {{ showroom.name }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+                <p class="text-gray-500 dark:text-gray-400">Loading...</p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="error" class="text-center py-4">
+                <p class="text-red-500">{{ error }}</p>
+            </div>
+
+            <!-- Cars Table -->
+            <div *ngIf="!isLoading && !error" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">VIN</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Maker</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Model</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Year</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        <tr *ngFor="let car of cars">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ car.vin }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ car.maker }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ car.model }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ car.modelYear }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${{ car.price }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
+                                <button (click)="editCar(car.id)" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                    Edit
+                                </button>
+                                <button (click)="deleteCar(car.id)" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Empty State -->
+                        <tr *ngIf="cars.length === 0">
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                No cars found
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-4">
+                <mat-paginator [length]="totalElements" [pageSize]="size" [pageIndex]="page" [pageSizeOptions]="[5, 10, 25, 50]" (page)="onPageChange($event)" class="dark:bg-gray-800 dark:text-white">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
 </div>

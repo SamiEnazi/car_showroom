@@ -1,95 +1,138 @@
-import { Component, OnInit } from '@angular/core';
-import { ShowroomService } from '../../core/services/showroom.service';
-import { Showroom } from '../../Interfaces/showroom';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+import { ShowroomService } from '../../core/services/showroom.service';
+import { AuthService } from '../../core/services/auth.service';
+import { NotificationsService } from '../../core/services/notifications.service';
+import { Showroom } from '../../Interfaces/showroom';
 
 @Component({
   selector: 'app-showroom',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatPaginatorModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatPaginatorModule, AsyncPipe],
   templateUrl: './showroom.component.html',
-  styleUrls: ['./showroom.component.scss'],
+  styleUrls: ['./showroom.component.scss']
 })
-export class ShowroomComponent implements OnInit {
+export class ShowroomComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  showroomForm: FormGroup;
+  showAddForm = false;
+  isSubmitting = false;
+
+  user$ = this.authService.user$;
+  isAdmin$ = this.user$.pipe(
+    map(user => user?.role === 'ADMIN')
+  );
+
   showrooms: Showroom[] = [];
+  errorMessage: string = '';
+
+  // Pagination
   page: number = 0;
-  size: number = 10;
+  size: number = 6;
   totalElements: number = 0;
 
-  // For creating/updating showrooms
-  newShowroom: Showroom = {
-    id: 0,
-    name: '',
-    commercialRegistrationNumber: '',
-    managerName: '',
-    contactNumber: '',
-    address: '',
-  };
-  isEditMode: boolean = false;
-
-  constructor(private showroomService: ShowroomService) { }
+  constructor(
+    private fb: FormBuilder,
+    private showroomService: ShowroomService,
+    private authService: AuthService,
+    private router: Router,
+    private notifications: NotificationsService
+  ) {
+    this.showroomForm = this.fb.group({
+      name: ['', Validators.required],
+      commercialRegistrationNumber: [''],
+      managerName: [''],
+      contactNumber: [''],
+      address: ['']
+    });
+  }
 
   ngOnInit(): void {
     this.loadShowrooms();
   }
 
-  // Load showrooms with pagination
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  toggleAddShowroom(): void {
+    this.showAddForm = !this.showAddForm;
+    if (!this.showAddForm) {
+      this.showroomForm.reset();
+    }
+  }
+
+  onSubmit(): void {
+    if (this.showroomForm.valid) {
+      this.isSubmitting = true;
+      this.showroomService.createShowroom(this.showroomForm.value).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: () => {
+          this.notifications.showSuccess('Showroom created successfully!', 'Success');
+          this.showroomForm.reset();
+          this.showAddForm = false;
+          this.loadShowrooms();
+          this.isSubmitting = false;
+        },
+        error: (error) => {
+          this.notifications.showError('Failed to create showroom!', 'Error');
+          this.isSubmitting = false;
+        }
+      });
+    }
+  }
+
+  // Existing methods remain the same
   loadShowrooms(): void {
-    this.showroomService.getAllShowrooms(this.page, this.size).subscribe((response) => {
-      this.showrooms = response.content;
-      this.totalElements = response.totalElements;
+    this.showroomService.getAllShowrooms(this.page, this.size).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response: any) => {
+        this.showrooms = response.content;
+        this.totalElements = response.totalElements;
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to load showrooms. Please try again later.';
+        this.notifications.showError('Failed to load showrooms!', 'Error');
+      }
     });
   }
 
-  // Handle page change event
-  onPageChange(event: any): void {
+  onPageChange(event: PageEvent): void {
     this.page = event.pageIndex;
     this.size = event.pageSize;
     this.loadShowrooms();
   }
 
-  // Create or update a showroom
-  saveShowroom(): void {
-    if (this.isEditMode) {
-      this.showroomService.updateShowroom(this.newShowroom.id, this.newShowroom).subscribe(() => {
-        this.resetForm();
-        this.loadShowrooms();
-      });
-    } else {
-      this.showroomService.createShowroom(this.newShowroom).subscribe(() => {
-        this.resetForm();
-        this.loadShowrooms();
-      });
-    }
+  viewDetails(showroomId: number): void {
+    this.router.navigate(['/showrooms', showroomId]);
   }
 
-  // Edit a showroom
-  editShowroom(showroom: Showroom): void {
-    this.isEditMode = true;
-    this.newShowroom = { ...showroom };
+  editShowroom(showroomId: number): void {
+    this.router.navigate(['/showrooms', showroomId, 'edit']);
   }
 
-  // Delete a showroom
   deleteShowroom(id: number): void {
     if (confirm('Are you sure you want to delete this showroom?')) {
-      this.showroomService.deleteShowroom(id).subscribe(() => {
-        this.loadShowrooms();
+      this.showroomService.deleteShowroom(id).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: () => {
+          this.loadShowrooms();
+          this.notifications.showSuccess('Showroom deleted successfully!', 'Success');
+        },
+        error: () => {
+          this.notifications.showError('Failed to delete showroom!', 'Error');
+        }
       });
     }
-  }
-
-  // Reset the form
-  resetForm(): void {
-    this.isEditMode = false;
-    this.newShowroom = {
-      id: 0,
-      name: '',
-      commercialRegistrationNumber: '',
-      managerName: '',
-      contactNumber: '',
-      address: '',
-    };
   }
 }

@@ -9,6 +9,7 @@ import com.challenge.carshowroom.repositories.ShowroomRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,8 +44,26 @@ public class CarService {
         return carRepository.findByShowroomIdAndDeletedAtIsNull(showroomId, pageable);
     }
 
-    public Page<Car> getAllCars(Pageable pageable) {
-        return carRepository.findByDeletedAtIsNull(pageable);
+    public Page<Car> getAllCars(Pageable pageable, Double minPrice, Double maxPrice, Long showroomId) {
+        Specification<Car> spec = Specification.where(null);
+
+        // Add price range filter
+        if (minPrice != null) {
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+        }
+        if (maxPrice != null) {
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+        }
+
+        // Add showroom filter
+        if (showroomId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("showroom").get("id"), showroomId));
+        }
+
+        // Add soft delete filter
+        spec = spec.and((root, query, cb) -> cb.isNull(root.get("deletedAt")));
+
+        return carRepository.findAll(spec, pageable);
     }
 
     // Update a car
@@ -64,5 +83,10 @@ public class CarService {
     // Soft delete a car
     public void deleteCar(Long id) {
         carRepository.softDeleteById(id);
+    }
+
+    public Car getCarById(Long id) {
+        return carRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
     }
 }
